@@ -29,6 +29,12 @@
         }
     },
     "rules": {
-        "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }]
+        "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+        "class-methods-use-this": "off",
+        "spaced-comment": "off",
+        "no-unused-vars": "off",
+        "no-plusplus": "off",
+        "no-console": "off",
+        "object-shorthand": "off"
     }
 }
