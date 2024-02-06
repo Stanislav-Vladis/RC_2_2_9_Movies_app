@@ -1,6 +1,7 @@
 import React from 'react';
 import { ConfigProvider, Pagination } from 'antd';
 import PropTypes from "prop-types";
+import {AppConsumer} from "../app/AppContext.jsx";
 
 export default class MoviePagination extends React.Component {
   static propTypes = {
@@ -9,32 +10,30 @@ export default class MoviePagination extends React.Component {
   };
 
   render() {
-    const { movieSearchData, onFindMoviesByKeyword } = this.props;
+    const { movieSearchData } = this.props;
     const {keyword, totalPages = 0} = movieSearchData;
-    const paginationStyle = {
-      marginBottom: 15
-    }
-
-    const handlePageChange = (page) => {
-      if (keyword) {
-        onFindMoviesByKeyword(keyword, page);
-      }
-    };
 
     return (
-      <ConfigProvider
-        theme={{
-          components: {
-            Pagination: {
-              itemActiveBg: '#1990ff',
-              colorPrimary: '#ffffff',
-              colorPrimaryHover: '#ffffff'
+        <ConfigProvider
+            theme={{
+              components: {
+                Pagination: {
+                  itemActiveBg: '#1990ff',
+                  colorPrimary: '#ffffff',
+                  colorPrimaryHover: '#ffffff'
+                }
+              }
+            }}
+        >
+          <AppConsumer>
+            {
+              (appValue) => (
+                  <Pagination style={{marginBottom: 15}} defaultCurrent={1} total={totalPages} showSizeChanger={false}
+                              onChange={(page) => appValue.findMoviesByKeyword(keyword, page)}/>
+              )
             }
-          }
-        }}
-      >
-        <Pagination style={paginationStyle} defaultCurrent={1} total={totalPages} showSizeChanger={false} onChange={handlePageChange} />
-      </ConfigProvider>
+          </AppConsumer>
+        </ConfigProvider>
     );
   }
 }

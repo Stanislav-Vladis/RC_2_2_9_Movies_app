@@ -1,23 +1,28 @@
 import React from 'react';
 import {Input} from 'antd';
-import { debounce } from 'lodash';
 import PropTypes from "prop-types";
+import {AppConsumer} from "../app/AppContext.jsx";
 
 export default class MovieSearchBar extends React.Component {
     static propTypes = {
-        calcBoxWidth: PropTypes.number,
-        onFindMoviesByKeyword: PropTypes.func
+        searchBarWidth: PropTypes.number
     };
 
     render() {
-        const { calcBoxWidth, onFindMoviesByKeyword } = this.props;
-        const searchInputStyle = {
-            width: calcBoxWidth
+        const { searchBarWidth } = this.props;
+        const searchBarStyle = {
+            width: searchBarWidth
         };
-        const handleInputChange = debounce(onFindMoviesByKeyword, 400);
 
         return (
-            <Input style={searchInputStyle} placeholder="Type of search..." onChange={(event) => handleInputChange(event.target.value)} />
+            <AppConsumer>
+                {
+                    (appValue) => (
+                        <Input style={searchBarStyle} placeholder="Type of search..."
+                               onChange={(event) => appValue.findMoviesByKeyword(event.target.value)}/>
+                    )
+                }
+            </AppConsumer>
         );
     }
 }

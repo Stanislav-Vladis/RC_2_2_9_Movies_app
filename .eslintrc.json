@@ -35,6 +35,7 @@
         "no-unused-vars": "off",
         "no-plusplus": "off",
         "no-console": "off",
-        "object-shorthand": "off"
+        "object-shorthand": "off",
+        "max-classes-per-file": "off"
     }
 }

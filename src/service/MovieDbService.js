@@ -46,8 +46,10 @@ const MovieDbService = (() => {
                     }
                 })
                 .catch(e => {
-                    console.error(e);
-                    return {}
+                    if (e instanceof TypeError) return {};
+                    return {
+                        error: e
+                    }
                 });
         }
     }
