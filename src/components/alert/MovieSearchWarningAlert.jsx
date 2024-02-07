@@ -2,7 +2,7 @@ import React from 'react';
 import {Alert, Flex} from 'antd';
 import PropTypes from "prop-types";
 
-export default class MovieSearchException extends React.Component {
+export default class MovieSearchWarningAlert extends React.Component {
     static propTypes = {
         boxWidth: PropTypes.number
     };
@@ -13,9 +13,9 @@ export default class MovieSearchException extends React.Component {
         return (
             <Flex style={{width: boxWidth}} vertical>
                 <Alert
-                    type="error"
-                    message="Ошибка!"
-                    description="Не удалось получить данные, попробуйте позднее..."
+                    type="warning"
+                    message="Контент отсутствует"
+                    description="По вашему запросу не удалось ничего найти"
                 />
             </Flex>
         );

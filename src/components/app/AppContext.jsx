@@ -19,10 +19,18 @@ class AppProvider extends Component {
         const init = () => {
             value.setStateApp('loading', true);
             value.setStateApp('error', false);
+            value.setStateApp('emptyAnswer', false);
         }
         const badRequest = () => {
             value.setStateApp('loading', false);
             value.setStateApp('error', true);
+            value.setStateApp('emptyAnswer', false);
+        }
+
+        const emptyRequest = () => {
+            value.setStateApp('loading', false);
+            value.setStateApp('error', true);
+            value.setStateApp('emptyAnswer', true);
         }
 
         const findMoviesByKeyword = (keyword, page) => {
@@ -32,8 +40,13 @@ class AppProvider extends Component {
                     badRequest();
                     return;
                 }
+                if (newMovieSearchData.movies.length <= 0 && newMovieSearchData.keyword.trim().length > 0) {
+                    emptyRequest();
+                    return;
+                }
                 value.setStateApp('movieSearchData', newMovieSearchData);
                 value.setStateApp('loading', false);
+                value.setStateApp('emptyAnswer', false);
             });
         }
 

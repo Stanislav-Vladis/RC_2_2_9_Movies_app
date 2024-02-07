@@ -46,7 +46,15 @@ const MovieDbService = (() => {
                     }
                 })
                 .catch(e => {
-                    if (e instanceof TypeError) return {};
+                    if (e instanceof TypeError && e.message.includes('response.json is not a function')) {
+                        return {
+                            keyword: keyword,
+                            page: 0,
+                            totalPages: 0,
+                            TotalResults: 0,
+                            movies: []
+                        };
+                    }
                     return {
                         error: e
                     }

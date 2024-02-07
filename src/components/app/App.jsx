@@ -9,7 +9,8 @@ import MovieDbService from "../../service/MovieDbService";
 import {AppProvider} from "./AppContext.jsx";
 import Utils from "../../utils/Utils";
 import SpinLoading from "../spin/SpinLoading.jsx";
-import MovieSearchException from "../exception/MovieSearchException.jsx";
+import MovieSearchErrorAlert from "../alert/MovieSearchErrorAlert.jsx";
+import MovieSearchWarningAlert from "../alert/MovieSearchWarningAlert.jsx";
 
 export default class App extends React.Component {
   constructor(props) {
@@ -20,7 +21,8 @@ export default class App extends React.Component {
   state = {
     movieSearchData: {},
     loading: false,
-    error: false
+    error: false,
+    emptyAnswer: false
   };
 
   render() {
@@ -35,7 +37,7 @@ export default class App extends React.Component {
     const movieBoxGap = Utils.isDesktop() ? 20 : 10;
     const movieCardWidth = Utils.isDesktop() ? 480 : 388;
     const boxWidth = Utils.getBoxWidth(movieCardWidth, movieBoxGap);
-    const { movieSearchData, loading, error} = this.state;
+    const { movieSearchData, loading, error, emptyAnswer} = this.state;
 
     const boxStyle = {
       width: boxWidth,
@@ -45,15 +47,17 @@ export default class App extends React.Component {
       border: '1px solid #40a9ff'
     };
 
-    const searchException = error ? <MovieSearchException boxWidth={boxWidth} /> : null;
-    const spinLoading = loading ? <SpinLoading boxWidth={boxWidth} /> : null;
-    const content = !(loading || error) ?
-        <BoxView
-            movieBoxGap={movieBoxGap}
-            movieCardWidth={movieCardWidth}
-            boxStyle={boxStyle}
-            movieSearchData={movieSearchData} /> :
-        null;
+    const defineContentToDisplay = () => {
+      if (error && !emptyAnswer) return <MovieSearchErrorAlert boxWidth={boxWidth} />;
+      if (error && emptyAnswer) return <MovieSearchWarningAlert boxWidth={boxWidth} />;
+      if (loading) return <SpinLoading boxWidth={boxWidth} />;
+      if (Object.keys(movieSearchData).length <= 0 || movieSearchData.movies.length <= 0) return null;
+      return <BoxView
+          movieBoxGap={movieBoxGap}
+          movieCardWidth={movieCardWidth}
+          boxStyle={boxStyle}
+          movieSearchData={movieSearchData} />
+    }
 
     return (
         <div className="App">
@@ -61,10 +65,7 @@ export default class App extends React.Component {
             <Flex style={{minWidth: movieCardWidth}} gap="middle" align="center" vertical>
               <MovieMenu />
               <MovieSearchBar searchBarWidth={boxWidth} />
-              {searchException}
-              {spinLoading}
-              {content}
-              <MoviePagination movieSearchData={movieSearchData} />
+              {defineContentToDisplay()}
             </Flex>
           </AppProvider>
         </div>
@@ -84,9 +85,12 @@ class BoxView extends React.Component {
     const { movieBoxGap, movieCardWidth, boxStyle, movieSearchData} = this.props;
 
     return (
-        <Flex style={boxStyle} gap={movieBoxGap} wrap="wrap" align="flex-start" justify="flex-start">
-          <MovieCard cardWidth={movieCardWidth} movieSearchData={movieSearchData}/>
-        </Flex>
+        <>
+          <Flex style={boxStyle} gap={movieBoxGap} wrap="wrap" align="flex-start" justify="flex-start">
+            <MovieCard cardWidth={movieCardWidth} movieSearchData={movieSearchData}/>
+          </Flex>
+          <MoviePagination movieSearchData={movieSearchData} />
+        </>
     );
   }
 }
