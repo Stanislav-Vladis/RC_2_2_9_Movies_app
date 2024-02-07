@@ -66,6 +66,7 @@ export default class App extends React.Component {
               <MovieMenu />
               <MovieSearchBar searchBarWidth={boxWidth} />
               {defineContentToDisplay()}
+              <MoviePagination movieSearchData={movieSearchData} />
             </Flex>
           </AppProvider>
         </div>
@@ -89,7 +90,6 @@ class BoxView extends React.Component {
           <Flex style={boxStyle} gap={movieBoxGap} wrap="wrap" align="flex-start" justify="flex-start">
             <MovieCard cardWidth={movieCardWidth} movieSearchData={movieSearchData}/>
           </Flex>
-          <MoviePagination movieSearchData={movieSearchData} />
         </>
     );
   }
