@@ -1,16 +1,16 @@
 import React from 'react';
-import {Flex} from 'antd';
-import PropTypes from "prop-types";
+import { Flex } from 'antd';
+import PropTypes from 'prop-types';
 import MoviePagination from '../movie-pagination/MoviePagination.jsx';
-import MovieCard from "../movie-card/MovieCard.jsx";
-import MovieMenu from "../movie-menu/MovieMenu.jsx";
-import MovieSearchBar from "../movie-search-bar/MovieSearchBar.jsx";
-import MovieDbService from "../../service/MovieDbService";
-import {AppProvider} from "./AppContext.jsx";
-import Utils from "../../utils/Utils";
-import SpinLoading from "../spin/SpinLoading.jsx";
-import MovieSearchErrorAlert from "../alert/MovieSearchErrorAlert.jsx";
-import MovieSearchWarningAlert from "../alert/MovieSearchWarningAlert.jsx";
+import MovieCard from '../movie-card/MovieCard.jsx';
+import MovieMenu from '../movie-menu/MovieMenu.jsx';
+import MovieSearchBar from '../movie-search-bar/MovieSearchBar.jsx';
+import MovieDbService from '../../service/MovieDbService';
+import { AppProvider } from './AppContext.jsx';
+import Utils from '../../utils/Utils';
+import SpinLoading from '../spin/SpinLoading.jsx';
+import MovieSearchErrorAlert from '../alert/MovieSearchErrorAlert.jsx';
+import MovieSearchWarningAlert from '../alert/MovieSearchWarningAlert.jsx';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -34,15 +34,16 @@ export default class App extends React.Component {
     const getExpiresAt = () => new Date(new Date(localStorage.getItem('lastRequestTime')).getTime() + 25 * 60000);
 
     if (!localStorage.getItem('guestSessionId') || new Date() > getExpiresAt()) {
-      this.movieDbService.createGuestSession().then(response => {
+      this.movieDbService.createGuestSession().then((response) => {
         localStorage.setItem('guestSessionId', response.guest_session_id);
       });
     }
 
-    if (localStorage.getItem('guestSessionId') && !sessionStorage.getItem('ratingData')) this.movieDbService.getAllRatingMovies().then();
+    if (localStorage.getItem('guestSessionId') && !sessionStorage.getItem('ratingData'))
+      this.movieDbService.getAllRatingMovies().then();
 
     if (!Object.keys(this.state.movieGenres) <= 0) {
-      this.movieDbService.getMovieGenres().then(movieGenres => {
+      this.movieDbService.getMovieGenres().then((movieGenres) => {
         this.setState(() => ({
           movieGenres: movieGenres
         }));
@@ -58,26 +59,30 @@ export default class App extends React.Component {
           [key]: value
         }));
       },
-      movieDbService: this.movieDbService,
-    }
+      movieDbService: this.movieDbService
+    };
     const dimensions = {
       movieBoxGap: Utils.isDesktop() ? 20 : 10,
       movieCardWidth: Utils.isDesktop() ? 480 : 388
-    }
+    };
     dimensions.boxWidth = Utils.getBoxWidth(dimensions.movieCardWidth, dimensions.movieBoxGap);
     const { activeTab, movieSearchData, containerDisplayMode } = this.state;
 
     return (
-        <div className="App">
-          <AppProvider value={appValue}>
-            <Flex style={{minWidth: dimensions.movieCardWidth}} gap="middle" align="center" vertical>
-              <MovieMenu movieSearchData={movieSearchData} />
-              <MovieSearchBar searchBarWidth={dimensions.boxWidth} />
-              <ContentDisplayTool dimensions={dimensions} movieSearchData={movieSearchData} containerDisplayMode={containerDisplayMode} />
-              <MoviePagination activeTab={activeTab} movieSearchData={movieSearchData} />
-            </Flex>
-          </AppProvider>
-        </div>
+      <div className="App">
+        <AppProvider value={appValue}>
+          <Flex style={{ minWidth: dimensions.movieCardWidth }} gap="middle" align="center" vertical>
+            <MovieMenu movieSearchData={movieSearchData} />
+            <MovieSearchBar searchBarWidth={dimensions.boxWidth} />
+            <ContentDisplayTool
+              dimensions={dimensions}
+              movieSearchData={movieSearchData}
+              containerDisplayMode={containerDisplayMode}
+            />
+            <MoviePagination activeTab={activeTab} movieSearchData={movieSearchData} />
+          </Flex>
+        </AppProvider>
+      </div>
     );
   }
 }
@@ -103,17 +108,15 @@ class ContentDisplayTool extends React.Component {
       if (containerDisplayMode.error && containerDisplayMode.emptyAnswer) return <MovieSearchWarningAlert boxWidth={dimensions.boxWidth} />;
       if (containerDisplayMode.loading) return <SpinLoading boxWidth={dimensions.boxWidth} />;
       if (Object.keys(movieSearchData).length <= 0 || Object.keys(movieSearchData.movies).length <= 0) return null;
-      return <>
-        <Flex style={boxStyle} gap={dimensions.movieBoxGap} wrap="wrap" align="flex-start" justify="flex-start">
-          <MovieCard cardWidth={dimensions.movieCardWidth} movieSearchData={movieSearchData}/>
-        </Flex>
-      </>
-    }
-
-    return (
+      return (
         <>
-          {defineContentToDisplay()}
+          <Flex style={boxStyle} gap={dimensions.movieBoxGap} wrap="wrap" align="flex-start" justify="flex-start">
+            <MovieCard cardWidth={dimensions.movieCardWidth} movieSearchData={movieSearchData} />
+          </Flex>
         </>
-    )
+      );
+    };
+
+    return <>{defineContentToDisplay()}</>;
   }
 }
