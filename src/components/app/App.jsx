@@ -20,13 +20,38 @@ export default class App extends React.Component {
 
   state = {
     movieSearchData: {},
-    loading: false,
-    error: false,
-    emptyAnswer: false
+    movieGenres: {},
+    containerDisplayMode: {
+      loading: false,
+      error: false,
+      emptyAnswer: false
+    }
   };
+
+  componentDidMount() {
+    //Сессия перестает быть рабочий если 30 минут не было никаких обращений (настройки сервера)
+    const getExpiresAt = () => new Date(new Date(localStorage.getItem('lastRequestTime')).getTime() + 25 * 60000);
+
+    if (!localStorage.getItem('guestSessionId') || new Date() > getExpiresAt()) {
+      this.movieDbService.createGuestSession().then(response => {
+        localStorage.setItem('guestSessionId', response.guest_session_id);
+      });
+    }
+
+    if (!sessionStorage.getItem('ratingData')) this.movieDbService.getRatingMovies().then();
+
+    if (!Object.keys(this.state.movieGenres) <= 0) {
+      this.movieDbService.getMovieGenres().then(movieGenres => {
+        this.setState(() => ({
+          movieGenres: movieGenres
+        }));
+      });
+    }
+  }
 
   render() {
     const appValue = {
+      getStateApp: (key) => this.state[key],
       setStateApp: (key, value) => {
         this.setState(() => ({
           [key]: value
@@ -34,38 +59,20 @@ export default class App extends React.Component {
       },
       movieDbService: this.movieDbService,
     }
-    const movieBoxGap = Utils.isDesktop() ? 20 : 10;
-    const movieCardWidth = Utils.isDesktop() ? 480 : 388;
-    const boxWidth = Utils.getBoxWidth(movieCardWidth, movieBoxGap);
-    const { movieSearchData, loading, error, emptyAnswer} = this.state;
-
-    const boxStyle = {
-      width: boxWidth,
-      minWidth: movieCardWidth,
-      height: '100%',
-      borderRadius: 6,
-      border: '1px solid #40a9ff'
-    };
-
-    const defineContentToDisplay = () => {
-      if (error && !emptyAnswer) return <MovieSearchErrorAlert boxWidth={boxWidth} />;
-      if (error && emptyAnswer) return <MovieSearchWarningAlert boxWidth={boxWidth} />;
-      if (loading) return <SpinLoading boxWidth={boxWidth} />;
-      if (Object.keys(movieSearchData).length <= 0 || movieSearchData.movies.length <= 0) return null;
-      return <BoxView
-          movieBoxGap={movieBoxGap}
-          movieCardWidth={movieCardWidth}
-          boxStyle={boxStyle}
-          movieSearchData={movieSearchData} />
+    const dimensions = {
+      movieBoxGap: Utils.isDesktop() ? 20 : 10,
+      movieCardWidth: Utils.isDesktop() ? 480 : 388
     }
+    dimensions.boxWidth = Utils.getBoxWidth(dimensions.movieCardWidth, dimensions.movieBoxGap);
+    const { movieSearchData, containerDisplayMode } = this.state;
 
     return (
         <div className="App">
           <AppProvider value={appValue}>
-            <Flex style={{minWidth: movieCardWidth}} gap="middle" align="center" vertical>
+            <Flex style={{minWidth: dimensions.movieCardWidth}} gap="middle" align="center" vertical>
               <MovieMenu />
-              <MovieSearchBar searchBarWidth={boxWidth} />
-              {defineContentToDisplay()}
+              <MovieSearchBar searchBarWidth={dimensions.boxWidth} />
+              <ContentDisplayTool dimensions={dimensions} movieSearchData={movieSearchData} containerDisplayMode={containerDisplayMode} />
               <MoviePagination movieSearchData={movieSearchData} />
             </Flex>
           </AppProvider>
@@ -74,23 +81,40 @@ export default class App extends React.Component {
   }
 }
 
-class BoxView extends React.Component {
+class ContentDisplayTool extends React.Component {
   static propTypes = {
-    movieBoxGap: PropTypes.number,
-    movieCardWidth: PropTypes.number,
-    boxStyle: PropTypes.object,
-    movieSearchData: PropTypes.object
+    dimensions: PropTypes.object,
+    movieSearchData: PropTypes.object,
+    containerDisplayMode: PropTypes.object
   };
 
   render() {
-    const { movieBoxGap, movieCardWidth, boxStyle, movieSearchData} = this.props;
+    const { dimensions, movieSearchData, containerDisplayMode } = this.props;
+
+    const boxStyle = {
+      width: dimensions.boxWidth,
+      minWidth: dimensions.movieCardWidth,
+      height: '100%',
+      borderRadius: 6,
+      border: '1px solid #40a9ff'
+    };
+
+    const defineContentToDisplay = () => {
+      if (containerDisplayMode.error && !containerDisplayMode.emptyAnswer) return <MovieSearchErrorAlert boxWidth={dimensions.boxWidth} />;
+      if (containerDisplayMode.error && containerDisplayMode.emptyAnswer) return <MovieSearchWarningAlert boxWidth={dimensions.boxWidth} />;
+      if (containerDisplayMode.loading) return <SpinLoading boxWidth={dimensions.boxWidth} />;
+      if (Object.keys(movieSearchData).length <= 0 || Object.keys(movieSearchData.movies).length <= 0) return null;
+      return <>
+        <Flex style={boxStyle} gap={dimensions.movieBoxGap} wrap="wrap" align="flex-start" justify="flex-start">
+          <MovieCard cardWidth={dimensions.movieCardWidth} movieSearchData={movieSearchData}/>
+        </Flex>
+      </>
+    }
 
     return (
         <>
-          <Flex style={boxStyle} gap={movieBoxGap} wrap="wrap" align="flex-start" justify="flex-start">
-            <MovieCard cardWidth={movieCardWidth} movieSearchData={movieSearchData}/>
-          </Flex>
+          {defineContentToDisplay()}
         </>
-    );
+    )
   }
 }

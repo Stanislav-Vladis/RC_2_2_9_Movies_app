@@ -17,41 +17,60 @@ class AppProvider extends Component {
         const { children, value } = this.props;
 
         const init = () => {
-            value.setStateApp('loading', true);
-            value.setStateApp('error', false);
-            value.setStateApp('emptyAnswer', false);
+            value.setStateApp('containerDisplayMode', {
+                loading: true,
+                error: false,
+                emptyAnswer: false
+            });
         }
         const badRequest = () => {
-            value.setStateApp('loading', false);
-            value.setStateApp('error', true);
-            value.setStateApp('emptyAnswer', false);
+            value.setStateApp('containerDisplayMode', {
+                loading: false,
+                error: true,
+                emptyAnswer: false
+            });
         }
 
         const emptyRequest = () => {
-            value.setStateApp('loading', false);
-            value.setStateApp('error', true);
-            value.setStateApp('emptyAnswer', true);
+            value.setStateApp('containerDisplayMode', {
+                loading: false,
+                error: true,
+                emptyAnswer: true
+            });
+        }
+
+        const okRequest = (updatedMovieSearchData) => {
+            value.setStateApp('movieSearchData', updatedMovieSearchData);
+            value.setStateApp('containerDisplayMode', {
+                loading: false,
+                error: false,
+                emptyAnswer: false
+            });
         }
 
         const findMoviesByKeyword = (keyword, page) => {
             init();
-            value.movieDbService.getMoviesByKeyword(keyword, page).then(newMovieSearchData => {
-                if (newMovieSearchData.error) {
-                    badRequest();
-                    return;
+            value.movieDbService.getMoviesByKeyword(keyword, page, value.getStateApp('movieGenres')).then(updatedMovieSearchData => {
+                switch (updatedMovieSearchData.requestStatus) {
+                    case 'error':
+                        badRequest();
+                        break;
+                    case 'emptyAnswer':
+                        emptyRequest();
+                        break;
+                    default:
+                        okRequest(updatedMovieSearchData);
                 }
-                if (newMovieSearchData.movies.length <= 0 && newMovieSearchData.keyword.trim().length > 0) {
-                    emptyRequest();
-                    return;
-                }
-                value.setStateApp('movieSearchData', newMovieSearchData);
-                value.setStateApp('loading', false);
-                value.setStateApp('emptyAnswer', false);
             });
         }
 
+        const addRatingForMovie = (id, rate) => {
+            value.movieDbService.addRatingForMovie(id, rate).then();
+        }
+
         const baseValue = {
-            findMoviesByKeyword: debounce(findMoviesByKeyword, 400)
+            findMoviesByKeyword: debounce(findMoviesByKeyword, 400),
+            addRatingForMovie: addRatingForMovie
         }
 
         return (
