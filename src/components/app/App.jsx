@@ -95,9 +95,7 @@ class ContentDisplayTool extends React.Component {
     const boxStyle = {
       width: dimensions.boxWidth,
       minWidth: dimensions.movieCardWidth,
-      height: '100%',
-      borderRadius: 6,
-      border: '1px solid #40a9ff'
+      height: '100%'
     };
 
     const defineContentToDisplay = () => {
