@@ -11,10 +11,12 @@ const MovieDbService = (() => {
         const parsedDate = parse(releaseDate, 'yyyy-MM-dd', new Date());
         return format(parsedDate, 'MMMM d, yyyy');
     }
+
     const getPosterPath = (posterPath) => {
         if (posterPath == null || posterPath.trim().length <= 0) return DEFAULT_POSTER_URL;
         return BASE_POSTER_URL + posterPath;
     }
+
     const buildMovieRatingData = (streaming) => {
         const data = sessionStorage.getItem('ratingData') ?
             JSON.parse(sessionStorage.getItem('ratingData')) : {};
@@ -24,6 +26,57 @@ const MovieDbService = (() => {
         });
 
         sessionStorage.setItem('ratingData', JSON.stringify(data));
+    }
+
+    const buildMoviesData = (keyword, promiseData, movieGenres) => {
+        return promiseData
+            .then(response => {
+                const buildMovies = {};
+                response.results.forEach(movie => {
+                    const formattedDate = getFormattedDate(movie.release_date);
+                    const posterPath = getPosterPath(movie.poster_path);
+                    const ratingData = sessionStorage.getItem('ratingData') ?
+                        JSON.parse(sessionStorage.getItem('ratingData')) : {};
+                    const buildGenres = movie.genre_ids.map(id => movieGenres[id]);
+
+                    buildMovies[movie.id] = {
+                        id: movie.id,
+                        movieName: movie.title,
+                        posterImg: posterPath,
+                        releaseDate: formattedDate,
+                        movieGenres: buildGenres,
+                        description: movie.overview,
+                        voteAverage: movie.vote_average,
+                        myRate: ratingData[movie.id] ? ratingData[movie.id] : 0
+                    };
+                });
+                const requestStatus = Object.keys(buildMovies).length <= 0 && keyword ? 'emptyAnswer' : 'ok';
+
+                return {
+                    keyword: keyword,
+                    page: response.page,
+                    totalPages: response.total_pages,
+                    TotalResults: response.total_results,
+                    movies: buildMovies,
+                    requestStatus: requestStatus
+                }
+            })
+            .catch(e => {
+                console.error(e);
+                if (e instanceof TypeError && e.message.includes('response.json is not a function')) {
+                    return {
+                        keyword: keyword,
+                        page: 0,
+                        totalPages: 0,
+                        TotalResults: 0,
+                        movies: {},
+                        requestStatus: 'ok'
+                    };
+                }
+                return {
+                    requestStatus: 'error'
+                }
+            });
     }
 
     class Service {
@@ -41,54 +94,9 @@ const MovieDbService = (() => {
         }
 
         async getMoviesByKeyword(keyword, page, movieGenres = {}) {
-            return movieDbClient.getMoviesByKeyword(keyword, page)
-                .then(response => response.json())
-                .then(response => {
-                    const buildMovies = {};
-                    response.results.forEach(movie => {
-                        const formattedDate = getFormattedDate(movie.release_date);
-                        const posterPath = getPosterPath(movie.poster_path);
-                        const ratingData = sessionStorage.getItem('ratingData') ?
-                            JSON.parse(sessionStorage.getItem('ratingData')) : {};
-                        const buildGenres = movie.genre_ids.map(id => movieGenres[id]);
-
-                        buildMovies[movie.id] = {
-                            id: movie.id,
-                            movieName: movie.title,
-                            posterImg: posterPath,
-                            releaseDate: formattedDate,
-                            movieGenres: buildGenres,
-                            description: movie.overview,
-                            voteAverage: movie.vote_average,
-                            myRate: ratingData[movie.id] ? ratingData[movie.id] : 0
-                        };
-                    });
-                    const requestStatus = Object.keys(buildMovies).length <= 0 && keyword ? 'emptyAnswer' : 'ok';
-
-                    return {
-                        keyword: keyword,
-                        page: response.page,
-                        totalPages: response.total_pages,
-                        TotalResults: response.total_results,
-                        movies: buildMovies,
-                        requestStatus: requestStatus
-                    }
-                })
-                .catch(e => {
-                    if (e instanceof TypeError && e.message.includes('response.json is not a function')) {
-                        return {
-                            keyword: keyword,
-                            page: 0,
-                            totalPages: 0,
-                            TotalResults: 0,
-                            movies: {},
-                            requestStatus: 'ok'
-                        };
-                    }
-                    return {
-                        requestStatus: 'error'
-                    }
-                });
+            const promiseData = movieDbClient.getMoviesByKeyword(keyword, page)
+                .then(response => response.json());
+            return buildMoviesData(keyword, promiseData, movieGenres);
         }
 
         async addRatingForMovie(id, rate) {
@@ -105,11 +113,11 @@ const MovieDbService = (() => {
                 })
         }
 
-        async getRatingMovies(page = 1) {
+        async getAllRatingMovies(page = 1) {
             await movieDbClient.getRatingMovies(page)
                 .then(response => response.json())
                 .then(async response => {
-                    if (response.total_pages > page) await this.getRatingMovies(page + 1);
+                    if (response.total_pages > page) await this.getAllRatingMovies(page + 1);
                     buildMovieRatingData(response.results);
                 })
                 .catch(e => {
@@ -117,6 +125,12 @@ const MovieDbService = (() => {
                     return {};
                 });
             return JSON.parse(sessionStorage.getItem('ratingData'));
+        }
+
+        async getRatingMovies(keyword, page = 1, movieGenres = {}) {
+            const promiseData = movieDbClient.getRatingMovies(page)
+                .then(response => response.json());
+            return buildMoviesData(keyword, promiseData, movieGenres);
         }
 
         async getMovieGenres() {

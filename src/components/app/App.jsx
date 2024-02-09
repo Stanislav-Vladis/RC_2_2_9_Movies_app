@@ -19,6 +19,7 @@ export default class App extends React.Component {
   }
 
   state = {
+    activeTab: 'search',
     movieSearchData: {},
     movieGenres: {},
     containerDisplayMode: {
@@ -38,7 +39,7 @@ export default class App extends React.Component {
       });
     }
 
-    if (!sessionStorage.getItem('ratingData')) this.movieDbService.getRatingMovies().then();
+    if (!sessionStorage.getItem('ratingData')) this.movieDbService.getAllRatingMovies().then();
 
     if (!Object.keys(this.state.movieGenres) <= 0) {
       this.movieDbService.getMovieGenres().then(movieGenres => {
@@ -64,16 +65,16 @@ export default class App extends React.Component {
       movieCardWidth: Utils.isDesktop() ? 480 : 388
     }
     dimensions.boxWidth = Utils.getBoxWidth(dimensions.movieCardWidth, dimensions.movieBoxGap);
-    const { movieSearchData, containerDisplayMode } = this.state;
+    const { activeTab, movieSearchData, containerDisplayMode } = this.state;
 
     return (
         <div className="App">
           <AppProvider value={appValue}>
             <Flex style={{minWidth: dimensions.movieCardWidth}} gap="middle" align="center" vertical>
-              <MovieMenu />
+              <MovieMenu movieSearchData={movieSearchData} />
               <MovieSearchBar searchBarWidth={dimensions.boxWidth} />
               <ContentDisplayTool dimensions={dimensions} movieSearchData={movieSearchData} containerDisplayMode={containerDisplayMode} />
-              <MoviePagination movieSearchData={movieSearchData} />
+              <MoviePagination activeTab={activeTab} movieSearchData={movieSearchData} />
             </Flex>
           </AppProvider>
         </div>

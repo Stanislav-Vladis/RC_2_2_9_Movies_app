@@ -36,6 +36,7 @@
         "no-plusplus": "off",
         "no-console": "off",
         "object-shorthand": "off",
-        "max-classes-per-file": "off"
+        "max-classes-per-file": "off",
+        "arrow-body-style": "off"
     }
 }

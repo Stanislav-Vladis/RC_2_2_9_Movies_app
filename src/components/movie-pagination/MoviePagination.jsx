@@ -5,13 +5,13 @@ import {AppConsumer} from "../app/AppContext.jsx";
 
 export default class MoviePagination extends React.Component {
   static propTypes = {
-    movieSearchData: PropTypes.object,
-    onFindMoviesByKeyword: PropTypes.func
+      activeTab: PropTypes.string,
+      movieSearchData: PropTypes.object
   };
 
   render() {
-    const { movieSearchData } = this.props;
-    const {keyword, totalPages = 0} = movieSearchData;
+    const { activeTab, movieSearchData } = this.props;
+    const {keyword, totalPages } = movieSearchData;
 
     return (
         <ConfigProvider
@@ -29,7 +29,10 @@ export default class MoviePagination extends React.Component {
             {
               (appValue) => (
                   <Pagination style={{marginBottom: 15}} defaultCurrent={1} total={totalPages} showSizeChanger={false}
-                              onChange={(page) => appValue.findMoviesByKeyword(keyword, page)}/>
+                              onChange={(page) => {
+                                  if (activeTab === 'search') appValue.findMoviesByKeyword(keyword, page);
+                                  if (activeTab === 'rated') appValue.findRatingMovies(keyword, page);
+                              }}/>
               )
             }
           </AppConsumer>

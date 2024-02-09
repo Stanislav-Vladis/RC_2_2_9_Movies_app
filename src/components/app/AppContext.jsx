@@ -64,12 +64,29 @@ class AppProvider extends Component {
             });
         }
 
+        const findRatingMovies = (keyword, page) => {
+            init();
+            value.movieDbService.getRatingMovies(keyword, page, value.getStateApp('movieGenres')).then(updatedMovieSearchData => {
+                switch (updatedMovieSearchData.requestStatus) {
+                    case 'error':
+                        badRequest();
+                        break;
+                    case 'emptyAnswer':
+                        emptyRequest();
+                        break;
+                    default:
+                        okRequest(updatedMovieSearchData);
+                }
+            });
+        }
+
         const addRatingForMovie = (id, rate) => {
             value.movieDbService.addRatingForMovie(id, rate).then();
         }
 
         const baseValue = {
             findMoviesByKeyword: debounce(findMoviesByKeyword, 400),
+            findRatingMovies: debounce(findRatingMovies, 400),
             addRatingForMovie: addRatingForMovie
         }
 
