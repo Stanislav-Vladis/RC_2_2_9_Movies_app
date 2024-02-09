@@ -39,7 +39,7 @@ export default class App extends React.Component {
       });
     }
 
-    if (!sessionStorage.getItem('ratingData')) this.movieDbService.getAllRatingMovies().then();
+    if (localStorage.getItem('guestSessionId') && !sessionStorage.getItem('ratingData')) this.movieDbService.getAllRatingMovies().then();
 
     if (!Object.keys(this.state.movieGenres) <= 0) {
       this.movieDbService.getMovieGenres().then(movieGenres => {
