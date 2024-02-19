@@ -1,0 +1,19 @@
+body, * {
+    margin: 0;
+}
+
+body {
+    background: #f7f7f7;
+}
+
+.app {
+    box-sizing: border-box;
+    max-width: 1010px;
+    margin: 0 auto;
+    background: #ffffff;
+    min-height: 100vh;
+    min-width: 420px;
+    font-family: 'InterUI', sans-serif;
+    color: red;
+    font-size: 100px;
+}
