@@ -14,8 +14,7 @@ class CardFilmRate extends React.Component {
   }
 
   static propTypes = {
-    film: PropTypes.object,
-    guestSessionId: PropTypes.string,
+    film: PropTypes.object
   };
 
   handleRateFilm = async (value) => {
@@ -23,8 +22,8 @@ class CardFilmRate extends React.Component {
       if (this.state.hasRated) {
         return
       }
-      const { film, guestSessionId } = this.props
-      await this.movieService.addRating(film.id, guestSessionId, value)
+      const { film } = this.props
+      await this.movieService.addRating(film.id, value)
       this.setState({ userRating: value, hasRated: true })
     } catch (error) {
       console.error('Ошибка при установке оценки фильма:', error)

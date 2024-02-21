@@ -21,7 +21,6 @@ export class GenreProvider extends React.Component {
       const genres = await this.movieService.getGenres()
       this.setState({ genres, loadingGenres: false })
     } catch (error) {
-      console.error('Ошибка при получении данных', error)
       this.setState({ loadingGenres: false })
     }
   }

@@ -4,15 +4,15 @@ import PropTypes from "prop-types";
 import CardFilmContainer from '../card-film-container/CardFilmContainer.jsx'
 
 const RatedTab = (props) => {
-  const { ratedMovies, currentPage = 1, guestSessionId, ratedTotalPages = 100, handlePageChange } = props
+  const { ratedMovies, currentPage = 1, ratedTotalPages = 1, handlePageChange } = props
 
   return (
     <>
-      <CardFilmContainer guestSessionId={guestSessionId} movies={ratedMovies} />
-      {ratedTotalPages > 1 && (
+      <CardFilmContainer error={props.error} movies={ratedMovies} />
+      {ratedTotalPages >= 1 && (
         <Pagination
           itemActiveBg={'#000'}
-          style={{ margin: '17px auto 36px auto' }}
+          style={{ margin: '17px auto 36px auto', textAlign: 'center' }}
           defaultCurrent={1}
           current={currentPage}
           total={ratedTotalPages * 10}
@@ -25,9 +25,9 @@ const RatedTab = (props) => {
 }
 
 RatedTab.propTypes = {
+  error: PropTypes.bool,
   ratedMovies: PropTypes.array,
   currentPage: PropTypes.number,
-  guestSessionId: PropTypes.string,
   ratedTotalPages: PropTypes.number,
   handlePageChange: PropTypes.func,
 };

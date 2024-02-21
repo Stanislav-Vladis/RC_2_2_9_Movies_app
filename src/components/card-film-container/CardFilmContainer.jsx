@@ -4,13 +4,14 @@ import React from 'react'
 import PropTypes from "prop-types";
 import CardFilm from '../card-film/CardFilm.jsx'
 import MoviesService from '../../services/MoviesService'
+import Utils from "../../utils/Utils";
 
 export default class CardFilmContainer extends React.Component {
   movieService = new MoviesService()
 
   static propTypes = {
-    movies: PropTypes.array,
-    guestSessionId: PropTypes.string,
+    error: PropTypes.bool,
+    movies: PropTypes.array
   };
 
   constructor(props) {
@@ -66,13 +67,16 @@ export default class CardFilmContainer extends React.Component {
 
     this.movieService
         .getAllMovies()
+        .then(Utils.transformMovie)
         .then(this.onMoviesLoaded)
         .catch(this.onError);
   }
 
   render() {
-    const { movies, guestSessionId } = this.props
-    const { loading, error, windowWidth } = this.state
+    const { movies } = this.props
+    const error = this.props.error ? this.props.error : this.state.error
+
+    const { loading, windowWidth } = this.state
     const hasResults = movies && movies.length > 0
     const pairsOfFilms = hasResults
       ? movies.reduce((pairs, film, index) => {
@@ -107,6 +111,7 @@ export default class CardFilmContainer extends React.Component {
               }}
             />
           )}
+
           {error && (
             <Alert
               message="Ошибка при загрузке данных"
@@ -114,33 +119,37 @@ export default class CardFilmContainer extends React.Component {
               type="error"
             />
           )}
-          {hasResults ? (
-            pairsOfFilms.map((pair, index) => (
-              <div key={index}>
-                <Row
-                  style={{
-                    paddingTop: '20px',
-                    justifyContent: 'space-between',
-                    paddingBottom: '20px',
-                    display: 'flex',
-                    alignItems: 'stretch',
-                    flexWrap: 'wrap',
-                    ...mobileStyle
-                  }}
-                  gutter={36}
-                >
-                  {pair.map((film, filmIndex) => (
-                    <Col key={filmIndex} xs={24} sm={24} md={12}>
-                      <CardFilm guestSessionId={guestSessionId} windowWidth={windowWidth} film={film} />
-                    </Col>
-                  ))}
-                </Row>
-              </div>
-            ))
-          ) : (
-            <Alert message="Нет результатов" description="Попробуйте изменить запрос для поиска фильмов." type="info" />
-          )}
         </Online>
+
+        {!loading && !error && hasResults && (
+            pairsOfFilms.map((pair, index) => (
+                <div key={index}>
+                  <Row
+                      style={{
+                        paddingTop: '20px',
+                        justifyContent: 'space-between',
+                        paddingBottom: '20px',
+                        display: 'flex',
+                        alignItems: 'stretch',
+                        flexWrap: 'wrap',
+                        ...mobileStyle
+                      }}
+                      gutter={36}
+                  >
+                    {pair.map((film, filmIndex) => (
+                        <Col key={filmIndex} xs={24} sm={24} md={12}>
+                          <CardFilm windowWidth={windowWidth} film={film} />
+                        </Col>
+                    ))}
+                  </Row>
+                </div>
+            ))
+        )}
+
+        {!error && !hasResults && (
+            <Alert message="Нет результатов" description="Попробуйте изменить запрос для поиска фильмов." type="info" />
+        )}
+
         <Offline>
           <Alert
             message="Отсутствует подключение к интернету"

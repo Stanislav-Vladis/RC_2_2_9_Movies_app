@@ -13,7 +13,6 @@ export default class CardFilm extends React.Component {
   static propTypes = {
     windowWidth: PropTypes.number,
     film: PropTypes.object,
-    guestSessionId: PropTypes.string,
     ratedMovies: PropTypes.object,
     onRateFilm: PropTypes.func
   };
@@ -35,16 +34,16 @@ export default class CardFilm extends React.Component {
 
   handleRateFilm = async (value) => {
     try {
-      const { film, guestSessionId } = this.props
-      await this.movieService.addRating(film.id, guestSessionId, value)
-      const updatedRatedMovies = [...this.props.ratedMovies]
-      const movieIndex = updatedRatedMovies.findIndex((movie) => movie.id === film.id)
+      const { film } = this.props
+      await this.movieService.addRating(film.id, value)
+      const { ratedMovies } = this.props
+      if (ratedMovies && ratedMovies.length > 0) {
+        const movieIndex = ratedMovies.findIndex((movie) => movie.id === film.id)
 
-      if (movieIndex !== -1) {
-        updatedRatedMovies[movieIndex].userRating = value
+        if (movieIndex !== -1) {
+          ratedMovies[movieIndex].userRating = value
+        }
       }
-
-      this.props.onRateFilm(updatedRatedMovies)
     } catch (error) {
       console.error('Ошибка при установке оценки фильма:', error)
     }

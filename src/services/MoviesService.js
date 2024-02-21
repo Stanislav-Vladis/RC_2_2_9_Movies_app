@@ -1,8 +1,19 @@
+const BEARER_TOKEN = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNGU0OTJjZGZhODljNzVmODc5NGJkNmY5ZTFhYzI5YSIsInN1YiI6IjY1YmQ3Y2YwODliNTYxMDE2MzZkMTRmZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.1UCGnkVK-vZGAH6txfQXV0tV8IJS_hFTbZuDu46kiMQ';
+const API_KEY = 'f4e492cdfa89c75f8794bd6f9e1ac29a';
+const BASE_URL = 'https://api.themoviedb.org';
+const SEARCH_REPOSITORIES = '/3/search/movie';
+const GUEST_SESSION = '/3/authentication/guest_session/new';
+const SET_RATING = '/3/movie/{-id-}/rating';
+const RATED_MOVIES = '/3/guest_session/{-guest_session_id-}/rated/movies';
+const GENRES = '/3/genre/movie/list';
+
 export default class MoviesService {
   constructor() {
-    this.apiKey = '7ca23a72a829dfd222ff9dcc8eec6865'
+    this.apiKey = 'f4e492cdfa89c75f8794bd6f9e1ac29a'
     this.baseUrl = 'https://api.themoviedb.org/3'
   }
+
+  setLastRequestTime = () => localStorage.setItem('lastRequestTime', new Date());
 
   async fetchJSON(url, options = {}) {
     const response = await fetch(url, options)
@@ -14,66 +25,93 @@ export default class MoviesService {
     return response.json()
   }
 
-  async getGenres() {
-    const url = `${this.baseUrl}/genre/movie/list?language=en&api_key=${this.apiKey}`
-    return this.fetchJSON(url)
-  }
-
-  async addRating(id, guestSessionId, rating) {
-    const url = `${this.baseUrl}/movie/${id}/rating?api_key=${this.apiKey}&guest_session_id=${guestSessionId}`
-    const requestBody = { value: rating }
-    const options = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-        accept: 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    }
-
-    await this.fetchJSON(url, options)
-  }
-
-  async getRatedMovies(guestSessionId, pageValue = 1) {
-    const url = `${this.baseUrl}/guest_session/${guestSessionId}/rated/movies?api_key=${this.apiKey}&page=${pageValue}`
-    const data = await this.fetchJSON(url)
-    const ratedMovies = data.results.map(this.transformMovie)
-    return {
-      ratedMovies,
-      totalPages: data.total_pages,
-    }
-  }
-
   async createGuestSession() {
-    const url = `${this.baseUrl}/authentication/guest_session/new?api_key=${this.apiKey}`
-    const data = await this.fetchJSON(url)
+    const requestOptions = {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        Authorization: BEARER_TOKEN
+      }
+    };
+    const url = new URL(BASE_URL + GUEST_SESSION);
+
+    const data = await this.fetchJSON(url, requestOptions)
+    this.setLastRequestTime();
+
     return data.guest_session_id
   }
 
-  async getResource(path, searchValue = 'return', page = 1) {
-    const url = `${this.baseUrl}${path}?query=${searchValue}&include_adult=false&language=en-US&page=${page}&api_key=${this.apiKey}`
-    return this.fetchJSON(url)
+  async getAllMovies(searchValue = 'return', page = 1) {
+    const requestOptions = {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        Authorization: BEARER_TOKEN
+      }
+    };
+
+    const url = new URL(BASE_URL + SEARCH_REPOSITORIES);
+    url.searchParams.set('query', searchValue);
+    url.searchParams.set('include_adult', 'false');
+    url.searchParams.set('page', page.toString());
+
+    this.setLastRequestTime();
+    return this.fetchJSON(url, requestOptions);
   }
 
-  async getAllMovies(searchValue, page) {
-    const res = await this.getResource('/search/movie', searchValue, page)
-    const movies = res.results.map(this.transformMovie)
-    return {
-      movies,
-      totalPages: res.total_pages,
+  async addRating(id, rating) {
+    const guestSessionId = localStorage.getItem('guestSessionId');
+    const requestOptions = {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json;charset=utf-8'
+      },
+      body: `{"value":${rating}}`
+    };
+
+    const url = new URL(BASE_URL + SET_RATING.replace('{-id-}', id));
+    url.searchParams.set('api_key', API_KEY);
+    url.searchParams.set('guest_session_id', guestSessionId);
+
+    if (guestSessionId) {
+      this.setLastRequestTime();
+      await this.fetchJSON(url, requestOptions);
     }
   }
 
-  transformMovie(movie) {
-    return {
-      id: movie.id,
-      title: movie.title,
-      overview: movie.overview,
-      releaseDate: movie.release_date,
-      posterPath: movie.poster_path,
-      voteAverage: movie.vote_average,
-      genreIds: movie.genre_ids,
-      rating: movie.rating,
+  async getRatedMovies(pageValue = 1) {
+    const guestSessionId = localStorage.getItem('guestSessionId');
+    const requestOptions = {
+      method: 'GET',
+      headers: {
+        accept: 'application/json'
+      }
+    };
+    const url = new URL(BASE_URL + RATED_MOVIES.replace('{-guest_session_id-}', guestSessionId));
+    url.searchParams.set('api_key', API_KEY);
+    url.searchParams.set('sort_by', 'created_at.asc');
+    url.searchParams.set('page', pageValue.toString());
+
+    if (guestSessionId) {
+      this.setLastRequestTime();
+      return this.fetchJSON(url, requestOptions);
     }
+    return {}
+  }
+
+  async getGenres() {
+    const requestOptions = {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        Authorization: BEARER_TOKEN
+      }
+    };
+    const url = new URL(BASE_URL + GENRES);
+    url.searchParams.set('language', 'en');
+
+    this.setLastRequestTime();
+    return this.fetchJSON(url, requestOptions);
   }
 }

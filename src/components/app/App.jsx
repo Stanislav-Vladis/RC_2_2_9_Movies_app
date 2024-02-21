@@ -6,6 +6,7 @@ import MoviesService from '../../services/MoviesService'
 import { GenreProvider } from '../../services/GenreContext'
 import RatedTab from '../rated-tab/RatedTab.jsx'
 import SearchTab from '../search-tab/SearchTab.jsx'
+import Utils from "../../utils/Utils";
 
 class App extends Component {
   state = {
@@ -13,12 +14,24 @@ class App extends Component {
     movies: [],
     currentPage: 1,
     totalPages: null,
-    guestSessionId: null,
     activeTab: 'search',
     ratedMovies: [],
+    error: false
   }
 
   moviesService = new MoviesService()
+
+  componentDidMount() {
+    const getExpiresAt = () => new Date(new Date(localStorage.getItem('lastRequestTime')).getTime() + 25 * 60000);
+
+    if (!localStorage.getItem('guestSessionId') || new Date() > getExpiresAt()) {
+      this.moviesService.createGuestSession()
+        .then(guestSessionId => {
+          localStorage.setItem('guestSessionId', guestSessionId);
+          this.setState({ guestSessionId })
+        })
+    }
+  }
 
   handleTabChange = async () => {
     const { activeTab } = this.state
@@ -33,10 +46,10 @@ class App extends Component {
   }
 
   async loadRatedMovies(page) {
-    const { guestSessionId, movies } = this.state
+    const { movies } = this.state
 
     try {
-      const ratedMoviesResponse = await this.moviesService.getRatedMovies(guestSessionId, page)
+      const ratedMoviesResponse = Utils.transformMovie(await this.moviesService.getRatedMovies(page), 'ratedMovies')
       const ratedMovies = ratedMoviesResponse.ratedMovies || []
 
       const updatedMovies = movies.map((movie) => {
@@ -51,19 +64,33 @@ class App extends Component {
       })
 
       const ratedTotalPages = ratedMoviesResponse.totalPages
-      this.setState({ ratedMovies, ratedTotalPages, ratedCurrentPage: page, movies: updatedMovies })
+      this.setState({
+        error: false,
+        ratedMovies: ratedMovies,
+        ratedTotalPages: ratedTotalPages,
+        ratedCurrentPage: page,
+        movies: updatedMovies
+      })
     } catch (error) {
-      console.error('Ошибка загрузки рейтинговых фильмов:', error)
+      this.setState({
+        error: true
+      })
     }
   }
 
   async loadMovies(searchValue, page) {
     try {
       const data = await this.moviesService.getAllMovies(searchValue, page)
-      const { movies, totalPages } = data
-      this.setState({ movies, totalPages })
+      const { movies, totalPages } = Utils.transformMovie(data)
+      this.setState({
+        error: false,
+        movies: movies,
+        totalPages: totalPages
+      })
     } catch (error) {
-      console.error(error)
+      this.setState({
+        error: true
+      })
     }
   }
 
@@ -91,18 +118,12 @@ class App extends Component {
 
   debounceSearchMovies = debounce(this.loadMovies, 400)
 
-  async componentDidMount() {
-    const guestSessionId = await this.moviesService.createGuestSession()
-    this.setState({ guestSessionId })
-  }
-
   render() {
     const {
       currentPage,
       searchValue,
       movies,
       activeTab,
-      guestSessionId,
       ratedMovies,
       ratedTotalPages,
       totalPages,
@@ -125,7 +146,6 @@ class App extends Component {
                   searchValue={searchValue}
                   movies={movies}
                   currentPage={currentPage}
-                  guestSessionId={guestSessionId}
                   totalItems={totalPages}
                   handleInputChange={this.handleInputChange}
                   handlePageChange={this.handlePageChange}
@@ -135,9 +155,9 @@ class App extends Component {
             <Tabs.TabPane tab="Rated" key="2">
               {activeTab === 'rated' && (
                 <RatedTab
+                  error={this.state.error}
                   ratedMovies={ratedMovies}
                   currentPage={ratedCurrentPage}
-                  guestSessionId={guestSessionId}
                   ratedTotalPages={ratedTotalPages}
                   handlePageChange={this.handlePageChange}
                 />

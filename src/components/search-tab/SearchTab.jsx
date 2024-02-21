@@ -8,7 +8,6 @@ const SearchTab = (props) => {
       searchValue,
       movies,
       currentPage,
-      guestSessionId,
       totalItems,
       handleInputChange,
       handlePageChange
@@ -22,13 +21,13 @@ const SearchTab = (props) => {
         style={{ width: '100%', margin: '0 auto', marginBottom: '20px' }}
         onChange={handleInputChange}
       />
-      <CardFilmContainer guestSessionId={guestSessionId} movies={movies} />
+      <CardFilmContainer movies={movies} />
       <Pagination
         itemActiveBg={'#000'}
         style={{ margin: '17px auto 36px auto', textAlign: 'center' }}
         defaultCurrent={1}
         current={currentPage}
-        total={totalItems}
+        total={totalItems * 10}
         showSizeChanger={false}
         onChange={handlePageChange}
       />
@@ -40,7 +39,6 @@ SearchTab.propTypes = {
     searchValue: PropTypes.string,
     movies: PropTypes.array,
     currentPage: PropTypes.number,
-    guestSessionId: PropTypes.string,
     totalItems: PropTypes.number,
     handleInputChange: PropTypes.func,
     handlePageChange: PropTypes.func,
