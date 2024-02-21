@@ -1,17 +1,10 @@
-import React from 'react'
-import { Input, Pagination } from 'antd'
-import PropTypes from "prop-types";
-import CardFilmContainer from '../card-film-container/CardFilmContainer.jsx'
+import React from 'react';
+import { Input, Pagination } from 'antd';
+import PropTypes from 'prop-types';
+import CardFilmContainer from '../card-film-container/CardFilmContainer.jsx';
 
 const SearchTab = (props) => {
-  const {
-      searchValue,
-      movies,
-      currentPage,
-      totalItems,
-      handleInputChange,
-      handlePageChange
-  } = props
+  const { searchValue, movies, currentPage, totalItems, handleInputChange, handlePageChange } = props;
 
   return (
     <>
@@ -32,16 +25,16 @@ const SearchTab = (props) => {
         onChange={handlePageChange}
       />
     </>
-  )
-}
-
-SearchTab.propTypes = {
-    searchValue: PropTypes.string,
-    movies: PropTypes.array,
-    currentPage: PropTypes.number,
-    totalItems: PropTypes.number,
-    handleInputChange: PropTypes.func,
-    handlePageChange: PropTypes.func,
+  );
 };
 
-export default SearchTab
+SearchTab.propTypes = {
+  searchValue: PropTypes.string,
+  movies: PropTypes.array,
+  currentPage: PropTypes.number,
+  totalItems: PropTypes.number,
+  handleInputChange: PropTypes.func,
+  handlePageChange: PropTypes.func
+};
+
+export default SearchTab;

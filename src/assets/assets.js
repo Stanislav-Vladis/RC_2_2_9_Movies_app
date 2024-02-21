@@ -1,5 +1,5 @@
-import noImage from './no-image.png'
+import noImage from './no-image.png';
 
 export default {
-  noImage,
-}
+  noImage
+};

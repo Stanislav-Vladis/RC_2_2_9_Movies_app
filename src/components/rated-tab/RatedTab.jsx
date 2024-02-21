@@ -1,10 +1,10 @@
-import React from 'react'
-import { Pagination } from 'antd'
-import PropTypes from "prop-types";
-import CardFilmContainer from '../card-film-container/CardFilmContainer.jsx'
+import React from 'react';
+import { Pagination } from 'antd';
+import PropTypes from 'prop-types';
+import CardFilmContainer from '../card-film-container/CardFilmContainer.jsx';
 
 const RatedTab = (props) => {
-  const { ratedMovies, currentPage = 1, ratedTotalPages = 1, handlePageChange } = props
+  const { ratedMovies, currentPage = 1, ratedTotalPages = 1, handlePageChange } = props;
 
   return (
     <>
@@ -21,15 +21,15 @@ const RatedTab = (props) => {
         />
       )}
     </>
-  )
-}
+  );
+};
 
 RatedTab.propTypes = {
   error: PropTypes.bool,
   ratedMovies: PropTypes.array,
   currentPage: PropTypes.number,
   ratedTotalPages: PropTypes.number,
-  handlePageChange: PropTypes.func,
+  handlePageChange: PropTypes.func
 };
 
-export default RatedTab
+export default RatedTab;

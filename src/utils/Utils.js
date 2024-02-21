@@ -1,7 +1,5 @@
 export default class Utils {
-
   static transformMovie(data, key = 'movies') {
-
     const transform = (movie) => {
       return {
         id: movie.id,
@@ -11,20 +9,20 @@ export default class Utils {
         posterPath: movie.poster_path,
         voteAverage: movie.vote_average,
         genreIds: movie.genre_ids,
-        rating: movie.rating,
-      }
-    }
+        rating: movie.rating
+      };
+    };
 
     if (data && data.results) {
       const movies = data.results.map(transform);
       return {
         [key]: movies,
-        totalPages: data.total_pages,
-      }
+        totalPages: data.total_pages
+      };
     }
     return {
       [key]: [],
-      totalPages: 0,
-    }
+      totalPages: 0
+    };
   }
 }

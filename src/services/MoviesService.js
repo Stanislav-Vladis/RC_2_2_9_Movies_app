@@ -1,4 +1,5 @@
-const BEARER_TOKEN = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNGU0OTJjZGZhODljNzVmODc5NGJkNmY5ZTFhYzI5YSIsInN1YiI6IjY1YmQ3Y2YwODliNTYxMDE2MzZkMTRmZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.1UCGnkVK-vZGAH6txfQXV0tV8IJS_hFTbZuDu46kiMQ';
+const BEARER_TOKEN =
+  'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNGU0OTJjZGZhODljNzVmODc5NGJkNmY5ZTFhYzI5YSIsInN1YiI6IjY1YmQ3Y2YwODliNTYxMDE2MzZkMTRmZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.1UCGnkVK-vZGAH6txfQXV0tV8IJS_hFTbZuDu46kiMQ';
 const API_KEY = 'f4e492cdfa89c75f8794bd6f9e1ac29a';
 const BASE_URL = 'https://api.themoviedb.org';
 const SEARCH_REPOSITORIES = '/3/search/movie';
@@ -9,20 +10,20 @@ const GENRES = '/3/genre/movie/list';
 
 export default class MoviesService {
   constructor() {
-    this.apiKey = 'f4e492cdfa89c75f8794bd6f9e1ac29a'
-    this.baseUrl = 'https://api.themoviedb.org/3'
+    this.apiKey = 'f4e492cdfa89c75f8794bd6f9e1ac29a';
+    this.baseUrl = 'https://api.themoviedb.org/3';
   }
 
   setLastRequestTime = () => localStorage.setItem('lastRequestTime', new Date());
 
   async fetchJSON(url, options = {}) {
-    const response = await fetch(url, options)
+    const response = await fetch(url, options);
 
     if (!response.ok) {
-      throw new Error(`Ошибка при выполнении запроса ${url}`)
+      throw new Error(`Ошибка при выполнении запроса ${url}`);
     }
 
-    return response.json()
+    return response.json();
   }
 
   async createGuestSession() {
@@ -35,10 +36,10 @@ export default class MoviesService {
     };
     const url = new URL(BASE_URL + GUEST_SESSION);
 
-    const data = await this.fetchJSON(url, requestOptions)
+    const data = await this.fetchJSON(url, requestOptions);
     this.setLastRequestTime();
 
-    return data.guest_session_id
+    return data.guest_session_id;
   }
 
   async getAllMovies(searchValue = 'return', page = 1) {
@@ -97,7 +98,7 @@ export default class MoviesService {
       this.setLastRequestTime();
       return this.fetchJSON(url, requestOptions);
     }
-    return {}
+    return {};
   }
 
   async getGenres() {
